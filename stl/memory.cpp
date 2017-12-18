@@ -6,7 +6,7 @@
 template<typename T>
 class Blob;
 
-//定义Blob广义上的指针---迭代器
+//定义Blob广义上的指针,伴随指针类---迭代器
 template<typename TT>
 class BlobPtr{
     public:
