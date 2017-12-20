@@ -16,9 +16,7 @@ class BlobPtr{
         TT * operator ->() const;
         BlobPtr<TT> & operator ++();
         BlobPtr<TT> & operator --();
-        BlobPtr<TT> & operator ++(int);
-        BlobPtr<TT> & operator --(int);
-    private:
+        BlobPtr<TT> & operator ++(int); BlobPtr<TT> & operator --(int); private:
         std::shared_ptr<std::vector<TT>> check(std::size_t,const std::string &) const;
         std::size_t curr;
         std::weak_ptr<std::vector<TT>> wptr;
@@ -149,7 +147,7 @@ void Blob<T>::print() const{
     }
 }
 
-int main(){
+int test(){
     Blob<std::string> sb1;
     {   Blob<std::string> sb = {"raohui","test","haha"};
         sb1 = sb;
