@@ -1,11 +1,11 @@
 #include <iostream>
+#include <set>
 #include <string>
 
 using namespace std;
 
 class HasPtr{
     public:
-
         HasPtr(const string &s = string()):i(0),ps(new string(s)),use(new size_t(1)){};
         HasPtr(const HasPtr &rhp):i(rhp.i),ps(rhp.ps),use(rhp.use){++*use;};
         ~HasPtr(){
@@ -40,6 +40,24 @@ HasPtr & HasPtr::operator=(const HasPtr &rhp){
     return *this;
 }
 
+class Folder{
+
+};
+
+class Message{
+    friend class Folder;
+    public:
+        explicit Message(const string &s = string()):content(s){}
+        Message(const Message &m);
+        Message &operator= (const Message &m);
+        void save(Folder&f);
+        void remove(Folder&f);
+    private:
+        string content;
+        set<Folder*> folders;
+        void add_to_folders(const Message & m);
+        void remove_from_folders();
+};
 
 int main(){
     HasPtr hp("raohui");
