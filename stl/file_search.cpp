@@ -5,18 +5,17 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
-#include "Blob_memeryTest.cpp"
 
 using namespace std;
 class QueryResult{
     friend ostream & print(ostream &,const QueryResult &);
     public:
-        using line_no = vector<string>::size_type;
-        QueryResult(string w,shared_ptr<vector<string>> l,shared_ptr<set<line_no>> n):word(w),lines(l),num(n){}
+    using line_no = vector<string>::size_type;
+    QueryResult(string w,shared_ptr<vector<string>> l,shared_ptr<set<line_no>> n):word(w),lines(l),num(n){}
     private:
-        string word;
-        shared_ptr<vector<string>> lines;
-        shared_ptr<set<line_no>> num;
+    string word;
+    shared_ptr<vector<string>> lines;
+    shared_ptr<set<line_no>> num;
 };
 
 
@@ -49,6 +48,7 @@ TextQuery::TextQuery(ifstream &inputFile):lines(make_shared<vector<string>>()){
             auto &no = word_num[word];
             if(!no){
                 no.reset(new set<line_no>);
+                word_num[word] = no;
             }
             no->insert(n);
         }
@@ -56,7 +56,7 @@ TextQuery::TextQuery(ifstream &inputFile):lines(make_shared<vector<string>>()){
 }
 
 QueryResult TextQuery::query(const string &word)const {
-    //静态的，函数结束不会销毁
+    //静态的，函数结束不会被销毁
     static  shared_ptr<set<line_no>> nodata(new set<line_no>);
     auto result = word_num.find(word);
     if(result == word_num.end()){
@@ -80,80 +80,64 @@ void runQuery(ifstream &inputFile){
 
 }
 
-class QueryResult_Blob{
-    friend ostream & print_Blob(ostream &,const QueryResult_Blob &);
-    public:
-        using line_no = Blob<string>::size_type;
-        QueryResult_Blob(string w,shared_ptr<Blob<string>> l,shared_ptr<set<line_no>> n):word(w),lines(l),num(n){}
+
+class Query_base{
+    friend class Query;
+    protected:
+    using line_no = TextQuery::line_no;
+    virtual ~Query_base() = default;
     private:
-        string word;
-        shared_ptr<Blob<string>> lines;
-        shared_ptr<set<line_no>> num;
+    virtual QueryResult eval(const TextQuery &) = 0;
+    virtual string rep() = 0;
 };
 
-ostream & print_Blob(ostream &os,const QueryResult_Blob &qr){
-    os << qr.word <<  "  occurs  " << qr.num->size() << "  times" << endl;
-    for(auto n: *qr.num){
-        BlobPtr<string> bp(*(qr.lines),n);
-        os << "\t(line" << n + 1 << ")" << *(bp) << endl;
-    }
-    return os;
-}
+class WordQuery : public Query_base{
 
-class TextQuery_Blob{
-    public:
-        using line_no = Blob<string>::size_type;
-        TextQuery_Blob(ifstream &inputFile);
-        QueryResult_Blob query(const string &s) const;
-    private:
-        shared_ptr<Blob<string>> lines;
-        map<string,shared_ptr<set<line_no>>> word_num;
 };
 
-TextQuery_Blob::TextQuery_Blob(ifstream &inputFile):lines(make_shared<Blob<string>>()){
-    string line;
-    while(getline(inputFile,line)){
-        lines->push_back(line);
-        size_t n = lines->size() - 1;
-        string word;
-        istringstream words(line);
-        while(words >> word){
-            auto &no = word_num[word];
-            if(!no){
-                no.reset(new set<line_no>);
-            }
-            no->insert(n);
-        }
+class NotQuery : public Query_base{
+
+};
+
+class BinaryQuery : public Query_base{
+
+};
+
+
+class AndQuery :public BinaryQuery{
+
+};
+
+class OrQuery :public BinaryQuery{
+
+};
+
+class Query{
+    friend Query operator ~(const Query &);
+    friend Query operator &(const Query &);
+    friend Query operator |(const Query &,const Query &);
+    public:
+    Query(const string &);
+    QueryResult eval(const TextQuery & t){
+        return q->eval(t);
     }
+
+    string rep() const {
+        return q->rep();
+    }
+    private:
+    Query(shared_ptr<Query_base> qq):q(qq){};
+    std::shared_ptr<Query_base> q;
+
+};
+
+ostream & operator << (ostream &os ,const Query &q){
+    return  os << q.rep() << endl;
 }
 
-QueryResult_Blob TextQuery_Blob::query(const string &word)const {
-    //静态的，函数结束不会销毁
-    static  shared_ptr<set<line_no>> nodata(new set<line_no>);
-    auto result = word_num.find(word);
-    if(result == word_num.end()){
-        return QueryResult_Blob(word,lines,nodata);
-    }
-    else{
-        return QueryResult_Blob(word,lines,result->second);
-    }
-
-}
-
-
-void runQuery_Blob(ifstream &inputFile){
-    TextQuery_Blob tq(inputFile);
-    while(true){
-        cout  << "enter word to look for , or q to quit" << endl;
-        string s;
-        if(!(cin >> s) || s == "q") break;
-        print_Blob(cout ,tq.query(s));
-    }
-
-}
 
 int main(){
     ifstream input("./input/file_search.txt");
-    runQuery_Blob(input);
+    runQuery(input);
     return 0;
 }
