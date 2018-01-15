@@ -83,16 +83,6 @@ QueryResult TextQuery::query(const string &word)const {
     }
 }
 
-void runQuery(ifstream &inputFile){
-    TextQuery tq(inputFile);
-    while(true){
-        cout  << "enter word to look for , or q to quit" << endl;
-        string s;
-        if(!(cin >> s) || s == "q") break;
-        print(cout ,tq.query(s));
-    }
-
-}
 
 
 class Query_base{
@@ -225,6 +215,24 @@ QueryResult OrQuery::eval(const TextQuery &t)const{
     return QueryResult(rep(),left.get_file(),ret_lines);
 }
 
+void runQuery(ifstream &inputFile){
+    TextQuery tq(inputFile);
+    while(true){
+        cout  << "enter word to look for , or q to quit" << endl;
+        string s;
+        if(!(cin >> s) || s == "q") break;
+        Query q(s);
+        Query q1("haha");
+        print(cout ,q.eval(tq));
+        Query nq = ~q;
+        print(cout ,nq.eval(tq));
+        Query  oq = nq | q1 ;
+        print(cout ,oq.eval(tq));
+        Query aq = q & q1;
+        print(cout ,aq.eval(tq));
+    }
+
+}
 
 
 int main(){

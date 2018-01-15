@@ -79,6 +79,7 @@ std::shared_ptr<std::vector<TT>> BlobPtr<TT>::check(std::size_t i,const std::str
 template<typename T>
 class Blob{
     friend class BlobPtr<T>;
+    friend bool operator == (const Blob<T> &,const Blob &);
     public:
         typedef typename std::vector<T>::size_type size_type;
         Blob();
@@ -86,11 +87,13 @@ class Blob{
         size_type size(){return data->size();};
         bool empty() const {return data->empty();};
         void push_back(const T &s){data->push_back(s);};
+        void push_back(T &&s){data->push_back(std::move(s));};
         void pop_back();
         T& front();
         T& back();
         T& back() const;
         T& front() const;
+        T& operator[](size_type i);
         void print() const;
 
     private:
@@ -105,6 +108,11 @@ class Blob{
 };
 
 template<typename T>
+bool operator == (const Blob<T> &lhs,const Blob<T> &rhs){
+    return *(lhs.data) == *(rhs.data);
+}
+
+template<typename T>
 Blob<T>::Blob(): data(std::make_shared<std::vector<T>>()){}
 
 template<typename T>
@@ -112,32 +120,32 @@ Blob<T>::Blob(std::initializer_list<T> il): data(std::make_shared<std::vector<T>
 
 template<typename T>
 T& Blob<T>::front(){
-   check(0,"front on empty Blob<T>"); 
-   return data->front();
+    check(0,"front on empty Blob<T>"); 
+    return data->front();
 }
 
 template<typename T>
 T& Blob<T>::front() const{
-   check(0,"front on empty Blob<T>"); 
-   return data->front();
+    check(0,"front on empty Blob<T>"); 
+    return data->front();
 }
 
 template<typename T>
 T& Blob<T>::back(){
-   check(0,"back on empty Blob<T>"); 
-   return data->back();
+    check(0,"back on empty Blob<T>"); 
+    return data->back();
 }
 
 template<typename T>
 T& Blob<T>::back() const{
-   check(0,"back on empty Blob<T>"); 
-   return data->back();
+    check(0,"back on empty Blob<T>"); 
+    return data->back();
 }
 
 template<typename T>
 void Blob<T>::pop_back(){
-   check(0,"pop_back on empty Blob<T>"); 
-   data->pop_back();
+    check(0,"pop_back on empty Blob<T>"); 
+    data->pop_back();
 }
 
 template<typename T>
@@ -147,7 +155,13 @@ void Blob<T>::print() const{
     }
 }
 
-int test(){
+template<typename T>
+T& Blob<T>::operator[](size_type i){
+    check(i,"subscript out of range");
+    return (*data)[i];
+}
+
+int main(){
     Blob<std::string> sb1;
     {   Blob<std::string> sb = {"raohui","test","haha"};
         sb1 = sb;
@@ -162,10 +176,7 @@ int test(){
     std::cout << s << std::endl;
     s = *(++sbr);
     std::cout << s << std::endl;
+    std::cout << sb1[1] <<  std::endl;
     return 0;
 }
 
-//int main(){
-    //test();
-    //return 0;
-//}
