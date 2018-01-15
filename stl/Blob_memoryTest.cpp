@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <type_traits>
+
 
 template<typename T>
 class Blob;
@@ -79,11 +82,19 @@ std::shared_ptr<std::vector<TT>> BlobPtr<TT>::check(std::size_t i,const std::str
 template<typename T>
 class Blob{
     friend class BlobPtr<T>;
-    friend bool operator == (const Blob<T> &,const Blob &);
+    template<typename U>
+    friend bool operator== (const Blob<U> &,const Blob<U> &);
     public:
         typedef typename std::vector<T>::size_type size_type;
         Blob();
         Blob(std::initializer_list<T> il);
+        template <typename it>Blob(it begin,it end);
+        template <typename it>auto fcn(it bg) -> decltype(*bg){
+            return *bg;
+        }
+        template <typename it>auto fcb(it bg) -> typename std::remove_reference<decltype(*bg)>::type{
+            return *bg;
+        }
         size_type size(){return data->size();};
         bool empty() const {return data->empty();};
         void push_back(const T &s){data->push_back(s);};
@@ -107,8 +118,15 @@ class Blob{
         std::shared_ptr<std::vector<T>> data;
 };
 
+
 template<typename T>
-bool operator == (const Blob<T> &lhs,const Blob<T> &rhs){
+template<typename it>
+Blob<T>::Blob(it begin,it end):data(std::make_shared<std::vector<T>>(begin,end)){}
+
+
+
+template<typename U>
+bool operator == (const Blob<U> &lhs,const Blob<U> &rhs){
     return *(lhs.data) == *(rhs.data);
 }
 
@@ -161,9 +179,23 @@ T& Blob<T>::operator[](size_type i){
     return (*data)[i];
 }
 
+template<typename T>
+std::ostream &print(std::ostream &os,const T&t){
+    os << t << std::endl;
+    return os;
+}
+
+template<typename T,typename ... Args>
+std::ostream &print(std::ostream &os,const T&t,const Args& ...args){
+    os << t << ",";
+    return  print(os,args...);
+}
+
 int main(){
     Blob<std::string> sb1;
-    {   Blob<std::string> sb = {"raohui","test","haha"};
+
+    {   
+        Blob<std::string> sb = {"raohui","test","haha"};
         sb1 = sb;
         sb.print();
         sb1.push_back("haha");
@@ -177,6 +209,11 @@ int main(){
     s = *(++sbr);
     std::cout << s << std::endl;
     std::cout << sb1[1] <<  std::endl;
+    std::vector<int> v = {1,2,3,4};
+    Blob<int> sb2(v.begin(),v.end());
+    sb2.print();
+    print(std::cout,"raohui",1,23,18.9);
+
     return 0;
 }
 
