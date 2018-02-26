@@ -47,12 +47,11 @@ int main(){
     maps.insert(pair1);
     maps.insert(pair2);
 
-    map<int,string>::iterator miter = maps.begin();
-
-    for(;miter!=maps.end();miter++){
-        cout << miter->first << endl;
+    for (auto miter = maps.begin(); miter != maps.end(); ++miter) {
+        std::cout << miter->first << std::endl;
         cout << miter->second << endl;
     }
+
 
 
 
