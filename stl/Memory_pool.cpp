@@ -1,4 +1,7 @@
 #include <iostream>
+#include <string>
+
+using namespace std;
 
 template <typename T>
 class Memory_pool{
@@ -27,10 +30,10 @@ public:
     static void construct(T *ptr,const T& value);
     //内存对象销毁
     static void destroy(T *ptr);
-    static void destroy(T *ptr,const T& value);
 
 private:
 
+    //内存池的大小
     static size_t pool_size;
     static const int Align = 8;
     //最大分配的字节
@@ -63,6 +66,7 @@ private:
         return (size+Align-1) / Align-1;
     }
 
+    //分配内存
     static void * _allocate(size_t size);
     //填充自由内存链表
     static void *rfill(size_t size);
@@ -72,6 +76,30 @@ private:
 
 template <typename T>
 size_t  Memory_pool<T>::pool_size = 0;
+
+template <typename T>
+char*  Memory_pool<T>::startOfPool = nullptr;
+
+template <typename T>
+char*  Memory_pool<T>::endOfPool = nullptr;
+
+template <typename T>
+typename Memory_pool<T>::node* Memory_pool<T>::freeList[NumberOfFreeList]  = {nullptr};
+
+template <typename T>
+void Memory_pool<T>::construct(T*ptr){
+    new (ptr) T;
+}
+
+template <typename T>
+void Memory_pool<T>::construct(T*ptr,const T&value){
+    new (ptr) T(value);
+}
+
+template <typename T>
+void Memory_pool<T>::destroy(T*ptr){
+    ptr->~T();
+}
 
 template <typename T>
 void Memory_pool<T>::deallocate(T *ptr){
@@ -84,8 +112,8 @@ void Memory_pool<T>::deallocate(T *ptr,size_t size){
         free(ptr);
     }else{
         node** suitList  = freeList + FreeListIndex(size);
-        static_cast<node*>(ptr)->next = *suitList;
-        *suitList = static_cast<node*>(ptr);
+        reinterpret_cast<node*>(ptr)->next = *suitList;
+        *suitList = reinterpret_cast<node*>(ptr);
     }
 
 }
@@ -121,14 +149,17 @@ void * Memory_pool<T>::_allocate(size_t size){
 template <typename T>
 void *Memory_pool<T>::rfill(size_t size){
     size_t num =  NumberOfAddNoteEverytime;
+    //向内存池申请内存块
     char *block =  blockAlloc(size,num);
     node **currentList = nullptr;
     node *currentNode = nullptr;
     node *nextNode = nullptr;
 
+    
     if(num == 1){
         return block;
     }
+    //申请完后如果有多出来的内存，就挂到自由链表上
     else{
         currentList = freeList + FreeListIndex(size);
         *currentList = nextNode =  reinterpret_cast<node *>(block);
@@ -164,7 +195,7 @@ char *Memory_pool<T>::blockAlloc(size_t size,size_t &num){
         if(bytesLeft > 0){
             node **suitList = freeList+ FreeListIndex(bytesLeft);
             reinterpret_cast<node *>(startOfPool)->next = *suitList;
-            *suitList = startOfPool;
+            *suitList = reinterpret_cast<node*>(startOfPool);
         }
         startOfPool = (char*)malloc(bytesToGet);
         if(!startOfPool){
@@ -194,6 +225,24 @@ char *Memory_pool<T>::blockAlloc(size_t size,size_t &num){
     }
 
 }
+
+int main(){
+    typedef Memory_pool<int> int_pool;
+    int *p = int_pool::allocate();
+    int_pool::construct(p,10);
+    std::cout << *p << std::endl;
+    int_pool::destroy(p);
+    int_pool::deallocate(p);
+
+    typedef Memory_pool<string> string_pool;
+    string *pp = string_pool::allocate();
+    string_pool::construct(pp,"raohui");
+    std::cout << *pp << std::endl;
+    string_pool::destroy(pp);
+    string_pool::deallocate(pp);
+    return 0;
+}
+
 
 
 
