@@ -5,12 +5,7 @@ using namespace std;
 
 template <typename T>
 class Memory_pool{
-public:
-    // constructors, asssignment, destructor
-    Memory_pool();
-    Memory_pool(const Memory_pool&);
-    Memory_pool& operator=(const Memory_pool&);
-    ~Memory_pool();
+
 public:
     typedef T            value_type;
     typedef T*            pointer;
@@ -138,10 +133,12 @@ void * Memory_pool<T>::_allocate(size_t size){
     //不为空链表，返回头节点
     if(psuitList){
         freeList[index] = psuitList->next;
+        cout << "直接从自由链表中获取" << endl;
         return psuitList;
 
     }else{
         //否则填充自由链表
+        cout << "需要填充自由链表" << endl;
         return reinterpret_cast<void*>(rfill(size));
     }
 }
@@ -227,12 +224,20 @@ char *Memory_pool<T>::blockAlloc(size_t size,size_t &num){
 }
 
 int main(){
+
     typedef Memory_pool<int> int_pool;
     int *p = int_pool::allocate();
     int_pool::construct(p,10);
     std::cout << *p << std::endl;
     int_pool::destroy(p);
     int_pool::deallocate(p);
+
+    int *p2 = int_pool::allocate();
+    int_pool::construct(p2,30);
+    std::cout << *p << std::endl;
+    int_pool::destroy(p2);
+    int_pool::deallocate(p2);
+
 
     typedef Memory_pool<string> string_pool;
     string *pp = string_pool::allocate();
