@@ -8,20 +8,30 @@ public:
     Memory_pool(const Memory_pool&);
     Memory_pool& operator=(const Memory_pool&);
     ~Memory_pool();
+public:
+    typedef T            value_type;
+    typedef T*            pointer;
+    typedef const T*    const_pointer;
+    typedef T&            reference;
+    typedef const T&    const_reference;
+    typedef size_t        size_type;
+    //typedef ptrdiff_t    difference_type;
     //内存池对外暴露申请内存的接口
-    static void *allocate();
-    static void *allocate(size_t size);
+    static T *allocate();
+    static T * allocate(size_t n);
     // 内存释放
-    static void deallocate(void* ptr);
-    static void deallocate(void* ptr,size_t size);
+    static void deallocate(T* ptr);
+    static void deallocate(T* ptr,size_t size);
     //内存对象构造
     static void construct(T *ptr);
     static void construct(T *ptr,const T& value);
     //内存对象销毁
     static void destroy(T *ptr);
     static void destroy(T *ptr,const T& value);
-    
+
 private:
+
+    static size_t pool_size;
     static const int Align = 8;
     //最大分配的字节
     static const int MaxBytes = 128;
@@ -43,7 +53,6 @@ private:
     //自由链表的数组
     static node* freeList[NumberOfFreeList];
 
-
     //返回的值是大于等于输入值且是Align大小的倍数
     static size_t ROUND_UP(size_t size){
         return ((size+Align-1) & ~(Align-1));
@@ -54,8 +63,137 @@ private:
         return (size+Align-1) / Align-1;
     }
 
+    static void * _allocate(size_t size);
     //填充自由内存链表
-    void *rfill(size_t size);
+    static void *rfill(size_t size);
     //真正向内存池申请内存
-    char *blockAlloc(size_t size,size_t & num);
+    static char *blockAlloc(size_t size,size_t & num);
 };
+
+template <typename T>
+size_t  Memory_pool<T>::pool_size = 0;
+
+template <typename T>
+void Memory_pool<T>::deallocate(T *ptr){
+    Memory_pool<T>::deallocate(ptr,sizeof(ptr));
+}
+
+template <typename T>
+void Memory_pool<T>::deallocate(T *ptr,size_t size){
+    if(size > 128){
+        free(ptr);
+    }else{
+        node** suitList  = freeList + FreeListIndex(size);
+        static_cast<node*>(ptr)->next = *suitList;
+        *suitList = static_cast<node*>(ptr);
+    }
+
+}
+
+template <typename T>
+T* Memory_pool<T>::allocate(){
+    return  static_cast<T*>(Memory_pool<T>::_allocate(sizeof(T)));
+}
+template <typename T>
+T* Memory_pool<T>::allocate(size_t n){
+    return  static_cast<T*>(Memory_pool<T>::_allocate(sizeof(T)*n));
+}
+
+template <typename T>
+void * Memory_pool<T>::_allocate(size_t size){
+    if(size > 128){
+        return static_cast<T*>(malloc(size));
+    }
+    //获取对应的自由链表
+    size_t index = FreeListIndex(size);
+    node * psuitList =  freeList[index];
+    //不为空链表，返回头节点
+    if(psuitList){
+        freeList[index] = psuitList->next;
+        return psuitList;
+
+    }else{
+        //否则填充自由链表
+        return reinterpret_cast<void*>(rfill(size));
+    }
+}
+
+template <typename T>
+void *Memory_pool<T>::rfill(size_t size){
+    size_t num =  NumberOfAddNoteEverytime;
+    char *block =  blockAlloc(size,num);
+    node **currentList = nullptr;
+    node *currentNode = nullptr;
+    node *nextNode = nullptr;
+
+    if(num == 1){
+        return block;
+    }
+    else{
+        currentList = freeList + FreeListIndex(size);
+        *currentList = nextNode =  reinterpret_cast<node *>(block);
+        for(int i=1;;i++){
+            currentNode = nextNode;
+            currentNode->next =  reinterpret_cast<node *>(nextNode+size);
+            nextNode = currentNode->next;
+            if(num-1 == i ){
+                return block;
+            }
+        }
+    }
+}
+
+template <typename T>
+char *Memory_pool<T>::blockAlloc(size_t size,size_t &num){
+    char *re = 0;
+    size_t bytesNeed = size * num;
+    size_t bytesLeft = endOfPool - startOfPool;
+
+    if(bytesLeft >= bytesNeed){
+        re = startOfPool;
+        startOfPool = startOfPool+ bytesNeed;
+        return re;
+    }else if(bytesLeft > size){
+        re = startOfPool;
+        num = bytesLeft / size;
+        startOfPool = startOfPool + num * size;
+        return re;
+
+    }else{
+        size_t bytesToGet = bytesNeed + ROUND_UP(pool_size >> 4);
+        if(bytesLeft > 0){
+            node **suitList = freeList+ FreeListIndex(bytesLeft);
+            reinterpret_cast<node *>(startOfPool)->next = *suitList;
+            *suitList = startOfPool;
+        }
+        startOfPool = (char*)malloc(bytesToGet);
+        if(!startOfPool){
+            node **currentList = nullptr;
+            node *currentNode = nullptr;
+            for(int i=size;i<=MaxBytes;i+=Align){
+                currentList =  freeList + FreeListIndex(i);
+                currentNode = *currentList;
+                if(currentNode){
+                    *currentList = currentNode->next;
+                    startOfPool = reinterpret_cast<char*>(currentNode);
+                    endOfPool = reinterpret_cast<char*>(currentNode+i);
+                    return blockAlloc(size,num);
+                }
+
+            }
+
+            exit(3);
+        }
+        else{
+            pool_size += bytesToGet;
+            endOfPool = startOfPool + bytesToGet;
+            return blockAlloc(size,num);
+
+        }
+
+    }
+
+}
+
+
+
