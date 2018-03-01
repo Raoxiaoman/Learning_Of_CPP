@@ -155,16 +155,18 @@ void Binary_search_Tree<T>::insert_node(T data){
             back = current;
             if(current->data > data){
                 current = current->left;
-            }else{
+            }else if(current->data < data){
                 current = current->right;
+            }else{
+                break;
             }
         }
 
         if(back->data > data){
             back->left = newnode;
-        }else{
+        }else if(back->data < data){
             back->right = newnode;
-        }
+        }// back->data == data nothing to do
 
     }
 }
@@ -214,6 +216,7 @@ int main()
     Binary_search_Tree<int> bt;
     bt.insert_node(4);
     bt.insert_node(5);
+    bt.insert_node(6);
     bt.insert_node(6);
     bt.insert_node(1);
     bt.insert_node(2);
