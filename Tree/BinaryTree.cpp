@@ -50,7 +50,6 @@ private:
     size_t _leaf_count(BiTPnode *travel);
     size_t _degree1_node(BiTPnode *travel);
     size_t _height(BiTPnode *travel);
-    BiTPnode * construct_node(T data);
 };
 
 template <typename T>
@@ -123,13 +122,12 @@ Binary_search_Tree<T>::~Binary_search_Tree(){
 template <typename T>
 //删除整棵树，需要释放所有开辟的内存
 void Binary_search_Tree<T>::_deleteBinary_search_Tree(BiTPnode *travel){
-    BiTPnode *node = travel;
-    if(node){
-        if(node->left !=nullptr){
-            _deleteBinary_search_Tree(node->left);
+    if(travel){
+        if(travel->left !=nullptr){
+            _deleteBinary_search_Tree(travel->left);
         }
-        if(node->right !=nullptr){
-            _deleteBinary_search_Tree(node->right);
+        if(travel->right !=nullptr){
+            _deleteBinary_search_Tree(travel->right);
         }
         delete travel;
         travel = nullptr;
@@ -144,7 +142,12 @@ Binary_search_Tree<T>::Binary_search_Tree(){
 
 template <typename T>
 void Binary_search_Tree<T>::insert_node(T data){
-    BiTPnode *newnode = construct_node(data);
+
+    BiTPnode *newnode = new BiTPnode();
+    newnode->data = data;
+    newnode->left = nullptr;
+    newnode->right = nullptr;
+
     if(root == nullptr){
         root = newnode;
     }else{
@@ -166,20 +169,15 @@ void Binary_search_Tree<T>::insert_node(T data){
             back->left = newnode;
         }else if(back->data < data){
             back->right = newnode;
-        }// back->data == data nothing to do
+        }
+        else{
+            // back->data == data nothing to do  
+            delete newnode;
+        }
 
     }
 }
 
-template <typename T>
-typename Binary_search_Tree<T>::BiTPnode * Binary_search_Tree<T>::construct_node(T data){
-    BiTPnode *node = new BiTPnode();
-    node->data = data;
-    node->left = nullptr;
-    node->right = nullptr;
-    return node;
-
-}
 
 template <typename T>
 void Binary_search_Tree<T>::PreOrderTravel(){

@@ -1,10 +1,11 @@
+source_name=$(sc)
 all:
 	${CXX} ${CFLAG} ${SRC} -o ${TARGET}
 
 CXX    = g++
 CFLAG  += -g -std=c++11
 TARGET = test
-SRC    = $(sc)
+SRC    = $(source_name)
 OJBS   = ${SRC:.cpp=.o}
 
 clean:
