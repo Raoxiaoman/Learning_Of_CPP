@@ -1,3 +1,14 @@
+/*
+ *
+信号量
+    如同进程一样，线程也可以通过信号量来实现通信，虽然是轻量级的。 
+方法有：
+int sem_init (sem_t *sem , int pshared, unsigned int value);初始化的信号量对象的指针
+int sem_wait(sem_t *sem);给信号量的值加 1
+int sem_post(sem_t *sem);给信号量减 1；对一个值为 0 的信号量调用 sem_wait, 这个函数将会等待直到有其它线程使它不再是 0 为止
+int sem_destroy(sem_t *sem);用完信号量后都它进行清理。归还自己占有的一切资源
+ *
+ * */
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>

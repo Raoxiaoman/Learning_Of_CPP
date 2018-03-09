@@ -1,3 +1,27 @@
+/*
+ *
+通过锁机制实现线程间的同步。同一时刻只允许一个线程执行一个关键部分的代码。
+方法有 :
+int pthread_mutex_init(pthread_mutex_t *mutex,const pthread_mutex_attr_t *mutexattr);
+int pthread_mutex_lock(pthread_mutex *mutex);
+int pthread_mutex_destroy(pthread_mutex *mutex);
+int pthread_mutex_unlock(pthread_mutex *);
+
+(1) 先初始化锁 init() 或静态赋值 pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIER
+attr_t 有:
+
+PTHREAD_MUTEX_TIMED_NP: 其余线程等待队列
+PTHREAD_MUTEX_RECURSIVE_NP: 嵌套锁, 允许线程多次加锁, 不同线程, 解锁后重新竞争
+PTHREAD_MUTEX_ERRORCHECK_NP: 检错, 与一同, 线程请求已用锁, 返回 EDEADLK;
+PTHREAD_MUTEX_ADAPTIVE_NP: 适应锁, 解锁后重新竞争
+
+(2) 加锁, lock,trylock,lock 阻塞等待锁, trylock 立即返回 EBUSY
+
+(3) 解锁, unlock 需满足是加锁状态, 且由加锁线程解锁
+
+(4) 清除锁, destroy(此时锁必需 unlock, 否则返回 EBUSY,Linux 下互斥锁不占用内存资源)
+ *
+ * */
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
