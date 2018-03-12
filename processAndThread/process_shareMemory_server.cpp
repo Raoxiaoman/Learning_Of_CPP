@@ -78,7 +78,7 @@ int create_sem(key_t key){
         exit(1);
     }
 
-    sem_init(sem_id,0);
+    sem_init(sem_id,1);
     return sem_id;
 
 }

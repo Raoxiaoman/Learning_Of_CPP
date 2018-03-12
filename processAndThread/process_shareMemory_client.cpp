@@ -64,18 +64,6 @@ int sem_v(int sem_id)
 }
 
 
-int create_sem(key_t key){
-    int sem_id;
-    if((sem_id=semget(key, 1, IPC_CREAT|0666))<0){
-        perror("sem_id get error\n");
-        exit(1);
-    }
-
-    sem_init(sem_id,0);
-    return sem_id;
-
-}
-
 int main(int argc, char *argv[])
 {
     int sem_id,msg_id,shm_id;
@@ -96,7 +84,11 @@ int main(int argc, char *argv[])
         perror("msg_id get error\n");
         exit(1);
     }
-    sem_id = create_sem(key);
+
+    if((sem_id=semget(key, 0, IPC_CREAT|0666))<0){
+        perror("sem_id get error\n");
+        exit(1);
+    }
 
     // 写数据
     printf("***************************************\n");
@@ -131,7 +123,7 @@ int main(int argc, char *argv[])
             default:
                 printf("error input!");
                 while((c=getchar())!='\n' && c!=EOF);
-                
+
 
         }
 
