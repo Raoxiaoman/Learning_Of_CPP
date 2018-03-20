@@ -21,13 +21,14 @@ int main() {
             cout << "create socket error" << endl;
             return 1;
         }
-        if(connect(client_sock, reinterpret_cast<struct sockaddr*>(&server_addr), sizeof(server_addr))<0){
-            cout << "connect socket error" << endl;
+        int ret = connect(client_sock, reinterpret_cast<struct sockaddr*>(&server_addr), sizeof(server_addr));
+        if(ret <0){
+            cout << "connect error" << endl;
             close(client_sock);
             return 1;
-
         }
         char buf[256];
+
         read(client_sock,buf,255);
         cout << buf << endl;
     }
