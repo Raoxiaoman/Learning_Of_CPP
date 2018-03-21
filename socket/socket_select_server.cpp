@@ -60,6 +60,7 @@ int Server::start_server() {
         tv.tv_sec = 30;
         tv.tv_usec = 0;
         int ret = select(maxfd+1, &readfds,NULL, NULL, &tv);
+        cout << "ret:" << ret << endl; 
         if (ret < 0) {
             perror("select");
             break;
@@ -90,22 +91,24 @@ int Server::start_server() {
             cout << "add client_sock:" << client_socks << endl;
             if(client_sock > maxfd) {
                 maxfd = client_sock;
+                cout << "change maxfd = client_sock:" << client_sock << endl;
             }
             if(i > currentclient) {
                 currentclient = i;
+                cout << "change currentclient = i:" << i  << endl;
             }
 
-            if(--ret ==0){
-                continue;
-            }
+            //if(--ret ==0){
+                //continue;
+            //}
 
         }
-        for(int i=0;i<currentclient;i++){
+        for(int i=0;i<maxclient;i++){
             if(client_socks[i] < 0){
                 continue;
             }
             if(FD_ISSET(client_socks[i], &readfds)){
-                cout << client_socks[i] << endl;
+                cout << "client_socks["<<i <<"]:"<< client_socks[i] << endl;
                 if ((n = read(client_socks[i], buf, 256)) == 0)
                 {
                     // 当 client 关闭链接时，服务器端也关闭对应链接

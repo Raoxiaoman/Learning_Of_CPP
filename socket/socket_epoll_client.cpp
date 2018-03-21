@@ -30,7 +30,8 @@ int main() {
         char str[] = "raohui";
         write(client_sock,str,strlen(str));
         char buf[256];
-        read(client_sock,buf,255);
+        //read(client_sock,buf,255);
+        recv(client_sock, buf, 256, 0);
         cout << buf << endl;
     //}
     return 0;
