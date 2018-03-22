@@ -159,7 +159,7 @@ void *Memory_pool<T>::rfill(size_t size){
     //申请完后如果有多出来的内存，就挂到自由链表上
     else{
         currentList = freeList + FreeListIndex(size);
-        *currentList = nextNode =  reinterpret_cast<node *>(block);
+        *currentList = nextNode =  reinterpret_cast<node *>(block+size);
         for(int i=1;;i++){
             currentNode = nextNode;
             currentNode->next =  reinterpret_cast<node *>(nextNode+size);
