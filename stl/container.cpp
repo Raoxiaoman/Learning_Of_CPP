@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include <map>
 #include <list>
 #include <deque>
@@ -26,20 +27,24 @@ int main(){
     cout << "*********vector begin***********" << endl;
     //vector[]随机访问
     for (unsigned int i = 0; i < ver.size(); i++) {
-        cout << ver[i] << endl;  
+        cout << ver[i] << " ";  
     }
+    cout << endl;
+
     //vertor使用迭代器访问
     vector<int>::iterator iter  = ver.begin();
     for (; iter!=ver.end() ; iter++) {
-        cout << *iter << endl; 
+        cout << *iter << " "; 
     }
+    cout << endl;
     //vertor使用insert和erase
     auto iiter = ver.begin();
     ver.insert(iiter+4, 55);
     ver.erase(iiter+2);
     for (auto iiiter : ver) {
-        cout << iiiter << endl;
+        cout << iiiter <<" ";
     }
+    cout << endl;
     cout << "*********vector end***********" << endl;
 
 
@@ -63,9 +68,9 @@ int main(){
     //list使用迭代器访问
     list<string>::iterator  liter = lists.begin();
     for(; liter!=lists.end(); liter++){
-        cout << *liter << endl; 
+        cout << *liter <<" " ; 
     }
-
+    cout << endl;
     auto  llter = lists.begin();
     //list使用insert和erase,list的迭代器不支持+和-运算符重载，但是支持++和--
     lists.insert(++llter,"heheh");
@@ -73,8 +78,9 @@ int main(){
     lists.erase(--llter_and);
 
     for(auto lllter:lists){
-        cout << lllter<< endl;
+        cout << lllter<< " ";
     }
+    cout << endl;
     cout << "*********list end***********" << endl;
     cout << "*********deque begin***********" << endl;
 
@@ -94,39 +100,89 @@ int main(){
 
     //deque使用[]遍历
     for (size_t i = 0; i < deques.size(); ++i) {
-        cout << deques[i] << endl;
+        cout << deques[i] << " ";
     }
+    cout << endl;
 
     //deque使用迭代器遍历
     auto diter = deques.begin();
     for(;diter!=deques.end();diter++){
-        cout << *diter<< endl;
+        cout << *diter<< " ";
     }
+    cout << endl;
 
     auto dditer = deques.begin();
     //deque进行insert和erase操作
     deques.insert(dditer+3,"hehea");
     deques.erase(dditer+5);
     for (auto ddditer : deques) {
-        cout << ddditer << endl;
+        cout << ddditer << " ";
     }
+    cout << endl;
     cout << "*********deque end***********" << endl;
 
-    cout << "*********map begin***********" << endl;
 
-    map<int,string> maps;
+    /**
+     *关联容器的特点是明显的，相对于顺序容器，有以下几个主要特点：
+     *A. 其内部实现是采用非线性的二叉树结构，具体的说是红黑树的结构原理实现的；
+     *B. set 和 map 保证了元素的唯一性，mulset 和 mulmap 扩展了这一属性，可以允许元素不唯一；
+     *C. 元素是排序的集合，默认在插入的时候按升序排列。
+     *D. 由于存储元素是排序的，所以关联容器对于元素插入操作是无序的，插入的顺序在存储内部由于排序会被打乱,
+     *所以关联容器不支持push_back,push_front,pop_back,pop_front的操作
+     *由于内部存储结构是红黑树所以关联容器插入和删除操作比vector块，但比list慢，因为红黑树修改一个节点会涉及到其他节点的变动比list多,而且得重新排序，
+     *关联容器查询效率比list快，因为红黑树是排序的，但还比vector慢.
+     **/
+
+    cout << "*********map begin***********" << endl;
+    map<int,string> maps ={{7,"hai"},{8,"wasai"}};
     pair<int,string> pair1(1,"raohui");
     pair<int,string> pair2(2,"qihai");
-
+    //map使用insert和erase
     maps.insert(pair1);
     maps.insert(pair2);
+    //map也可以使用[]访问，以这种方式[key]
+    cout << maps[1] << endl;
+    cout << maps[2] << endl;
 
+    //map使用迭代器遍历
     for (auto miter = maps.begin(); miter != maps.end(); ++miter) {
-        std::cout << miter->first << std::endl;
-        cout << miter->second << endl;
+        std::cout << miter->first << ":";
+        cout << miter->second << " ";
     }
+    cout << endl;
+
+    //pair也可以使用{key,value}的方式,map的元素的排序是根据key来比较的
+    //map的元素的唯一性是一个key对应一个value,相同key的前面的value会被后面的value覆盖
+    maps.insert({2,"heheh"});
+    maps.insert({4,"你好lo"});
+    maps.erase(2);
+    //同为链式存储，map的迭代器不支持+和-运算符，支持++和--运算符
+    maps.erase(maps.begin()++);
+    for (auto mmiter : maps) {
+        cout << mmiter.first << ":";
+        cout << mmiter.second << " ";
+    }
+    cout << endl;
     cout << "*********map end***********" << endl;
+    cout << "*********set begin***********" << endl;
+    set<string> sets = {"raohui","gaoxiao","jiayou","lalalal","raohui"};
 
-
+    //set使用迭代器访问
+    set<string>::iterator siter = sets.begin();
+    for(;siter!=sets.end();siter++){
+        cout << *siter<< " ";
+    }
+    cout << endl;
+    auto ssiter = sets.begin();
+    //set使用insert和erase,set的具有元素的唯一性和排序性
+    sets.insert("heheh");
+    sets.insert("raohui");
+    //同为链式存储，set的迭代器不支持+和-运算符，支持++和--运算符
+    sets.erase(ssiter++);
+    for (auto sssiter : sets) {
+        cout << sssiter << " ";
+    }
+    cout << endl;
+    cout << "*********set end***********" << endl;
     return 0;
 }
