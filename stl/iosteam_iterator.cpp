@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <utility>
 #include <vector>
 #include <fstream>
@@ -33,10 +34,41 @@ void test2(){
     //}
 //}
 
+void test4(){
+    ifstream in("input/name.txt");
+    string line,strtmp;
+    vector<string> vect; 
+
+    while(getline(in, line)){
+        istringstream ss(line);
+        while(getline(ss,strtmp,' ')){
+            vect.push_back(strtmp);
+        }
+    }
+    //istream_iterator<string> item_iter(in),eof;
+    //vector<string> vect(item_iter,eof);
+    cout << vect.size() << endl;
+    for (auto iter : vect) {
+        cout << iter << endl;
+    }
+
+    sort(vect.begin(), vect.end());
+    for (auto iter : vect) {
+        cout << iter << endl; 
+    }
+    vector<string> vect1;
+    unique_copy(vect.begin(), vect.end(),back_inserter(vect1));
+    cout << vect1.size() << endl;
+    for (auto iter : vect1) {
+        cout << iter << endl;
+    }
+}
+
 int main(){
-    
-    test1();
-    test2();
+
+    //test1();
+    //test2();
     //test3();
+    test4();
     return 0;
 }
